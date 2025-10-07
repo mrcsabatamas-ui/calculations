@@ -207,7 +207,7 @@
       `;
     }
   </script>
-  <script>
+ <script>
   function validateInputs(values) {
     const { elabe, netto, brutto, hk, afa, asz, ea } = values;
 
@@ -227,22 +227,25 @@
   }
 
   function calculate() {
-    // Your existing logic...
-    const known = {
-      elabe: ...,
-      netto: ...,
-      // etc.
-    };
+    const elabe = parseFloat(document.getElementById('elabe').value);
+    const netto = parseFloat(document.getElementById('netto').value);
+    const brutto = parseFloat(document.getElementById('brutto').value);
+    const hk = parseFloat(document.getElementById('hk').value);
+    const afa = parseFloat(document.getElementById('afa').value);
+    const asz = parseFloat(document.getElementById('asz').value);
+    const ea = parseFloat(document.getElementById('ea').value);
 
-    const error = validateInputs(known);
+    const error = validateInputs({ elabe, netto, brutto, hk, afa, asz, ea });
     if (error) {
       document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${error}`;
       return;
     }
 
-    // Continue with calculations...
+    // Continue with your calculation logic...
+    document.getElementById('output').innerHTML = `Számítás sikeres!`; // Placeholder
   }
 </script>
+
 
 </body>
 </html>
