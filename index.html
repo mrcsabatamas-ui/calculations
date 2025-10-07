@@ -207,6 +207,43 @@
       `;
     }
   </script>
+  <script>
+  function validateInputs(values) {
+    const { elabe, netto, brutto, hk, afa, asz, ea } = values;
+
+    if ([elabe, netto, brutto, hk, afa, asz, ea].some(v => v < 0)) {
+      return "Negatív érték nem lehet!";
+    }
+
+    if (Math.abs((asz || 0) + (ea || 0) - 100) > 2) {
+      return "Az Ász% + EÁ% nem ad ki 100%-ot. Ellenőrizze a bemeneteket.";
+    }
+
+    if ([hk, afa, asz, ea].some(v => v > 1000)) {
+      return "A megadott százalék túl magas.";
+    }
+
+    return null;
+  }
+
+  function calculate() {
+    // Your existing logic...
+    const known = {
+      elabe: ...,
+      netto: ...,
+      // etc.
+    };
+
+    const error = validateInputs(known);
+    if (error) {
+      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${error}`;
+      return;
+    }
+
+    // Continue with calculations...
+  }
+</script>
+
 </body>
 </html>
 
