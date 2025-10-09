@@ -56,50 +56,51 @@
   <div class="container">
     <h2>Ételköltség Kalkulátor</h2>
 
-    <div class="input-group">
-      <label>1. ismert érték:</label>
-      <select id="known1">
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value1" />
-    </div>
+    <div class="input-row">
+  <select id="known1">
+    <option value="elabe">ELÁBÉ</option>
+    <option value="netto">Nettó</option>
+    <option value="arres">Árrés</option>
+    <option value="brutto">Bruttó</option>
+    <option value="afa">Áfa %</option>
+    <option value="hk">Haszonkulcs</option>
+    <option value="asz">Ász%</option>
+    <option value="ea">EÁ%</option>
+  </select>
+  <input type="text" id="value1">
+</div>
 
-    <div class="input-group">
-      <label>2. ismert érték:</label>
-      <select id="known2">
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value2" />
-    </div>
+<div class="input-row">
+  <select id="known2">
+    <option value="elabe">ELÁBÉ</option>
+    <option value="netto">Nettó</option>
+    <option value="arres">Árrés</option>
+    <option value="brutto">Bruttó</option>
+    <option value="afa">Áfa %</option>
+    <option value="hk">Haszonkulcs</option>
+    <option value="asz">Ász%</option>
+    <option value="ea">EÁ%</option>
+  </select>
+  <input type="text" id="value2">
+</div>
 
-    <div class="input-group">
-      <label>3. ismert érték:</label>
-      <select id="known3">
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value3" />
-    </div>
+<div class="input-row">
+  <select id="known3">
+    <option value="elabe">ELÁBÉ</option>
+    <option value="netto">Nettó</option>
+    <option value="arres">Árrés</option>
+    <option value="brutto">Bruttó</option>
+    <option value="afa">Áfa %</option>
+    <option value="hk">Haszonkulcs</option>
+    <option value="asz">Ász%</option>
+    <option value="ea">EÁ%</option>
+  </select>
+  <input type="text" id="value3">
+</div>
+
+<button onclick="calculate()">Számítás</button>
+<div id="output"></div>
+
 
     <button onclick="calculate()">Számítás</button>
     <div class="result" id="output"></div>
