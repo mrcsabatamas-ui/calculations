@@ -105,83 +105,109 @@
     <div class="result" id="output"></div>
   </div>
 
-  <script>
-    <!-- Inside <script> block -->
-function calculate() {
-  const known = {};
-  known[document.getElementById('known1').value] = parseOrNull(document.getElementById('value1').value);
-  known[document.getElementById('known2').value] = parseOrNull(document.getElementById('value2').value);
-  known[document.getElementById('known3').value] = parseOrNull(document.getElementById('value3').value);
+ <script>
+  const parseOrNull = (v) => {
+    const num = parseFloat(v);
+    return isNaN(num) ? null : num;
+  };
 
-  let elabe = known.elabe ?? null;
-  let netto = known.netto ?? null;
-  let arres = known.arres ?? null;
-  let brutto = known.brutto ?? null;
-  let hk = known.hk ?? null;
-  let afa = known.afa ?? null;
-  let asz = known.asz ?? null;
-  let ea = known.ea ?? null;
-
-  const isKnown = (v) => v !== null && !isNaN(v);
-
-  // Initial validation
-  const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-  if (error) {
-    document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${error}`;
-    return;
+  function isKnown(v) {
+    return v !== null && !isNaN(v);
   }
 
-  let loopCount = 0;
-  while (loopCount < 10) {
-    loopCount++;
-    // Inference logic...
-    if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
-    if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
-    if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
-    if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
-    if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
-    if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
-    if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
-    if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
-    if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
-    if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
-    if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
-    if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
-    if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
-    if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
-    if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
+  function validateInputs(values) {
+    const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
+
+    if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v < 0)) {
+      return "Negatív érték nem lehet!";
+    }
+
+    if (isKnown(asz) && isKnown(ea) && Math.abs(asz + ea - 100) > 2) {
+      return "Az Ász% + EÁ% nem ad ki 100%-ot.";
+    }
+
+    if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
+      const expectedBrutto = netto * (1 + afa / 100);
+      if (Math.abs(expectedBrutto - brutto) > 5) {
+        return "A beírt értékek hibásak, kérlek adj meg valós értékeket.";
+      }
+    }
+
+    return null;
   }
 
-  // 🔁 Re-run validation after inference
-  const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-  if (postError) {
-    document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${postError}`;
-    return;
+  function calculate() {
+    const known = {};
+    known[document.getElementById('known1').value] = parseOrNull(document.getElementById('value1').value);
+    known[document.getElementById('known2').value] = parseOrNull(document.getElementById('value2').value);
+    known[document.getElementById('known3').value] = parseOrNull(document.getElementById('value3').value);
+
+    let elabe = known.elabe ?? null;
+    let netto = known.netto ?? null;
+    let arres = known.arres ?? null;
+    let brutto = known.brutto ?? null;
+    let hk = known.hk ?? null;
+    let afa = known.afa ?? null;
+    let asz = known.asz ?? null;
+    let ea = known.ea ?? null;
+
+    const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
+    if (error) {
+      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${error}`;
+      return;
+    }
+
+    let loopCount = 0;
+    while (loopCount < 10) {
+      loopCount++;
+      if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
+      if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
+      if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
+      if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
+      if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
+      if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
+      if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
+      if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
+      if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
+      if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
+      if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
+      if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
+      if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
+      if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
+      if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
+    }
+
+    const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
+    if (postError) {
+      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${postError}`;
+      return;
+    }
+
+    if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
+      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Nem sikerült kiszámítani az összes értéket.`;
+      return;
+    }
+
+    brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
+    afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
+    hk = ((netto / elabe) - 1) * 100;
+    asz = (arres / netto) * 100;
+    ea = (elabe / netto) * 100;
+
+    document.getElementById('output').innerHTML = `
+      <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
+      <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
+      <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
+      <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
+      <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
+      <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
+      <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
+      <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
+      <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
+    `;
   }
+</script>
 
-  if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
-    document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Nem sikerült kiszámítani az összes értéket.`;
-    return;
-  }
-
-  brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
-  afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
-  hk = ((netto / elabe) - 1) * 100;
-  asz = (arres / netto) * 100;
-  ea = (elabe / netto) * 100;
-
-  document.getElementById('output').innerHTML = `
-    <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
-    <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
-    <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
-    <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
-    <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
-    <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
-    <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
-    <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
-    <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
-  `;
-}
 
     
   </script>
