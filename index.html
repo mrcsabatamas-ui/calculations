@@ -112,16 +112,28 @@
     };
 
     function validateInputs(values) {
-      const { elabe, netto, arres, hk, afa, asz, ea } = values;
-      if ([elabe, netto, arres, hk, afa, asz, ea].some(v => v < 0)) {
-        return "Negatív érték nem lehet!";
-      }
-      if (Math.abs((asz || 0) + (ea || 0) - 100) > 2) {
-        return "Az Ász% + EÁ% nem ad ki 100%-ot.";
-      }
-      return null;
-    }
+  const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
 
+  if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v < 0)) {
+    return "Negatív érték nem lehet!";
+  }
+
+  if (Math.abs((asz || 0) + (ea || 0) - 100) > 2) {
+    return "Az Ász% + EÁ% nem ad ki 100%-ot.";
+  }
+
+  if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
+    const expectedBrutto = netto * (1 + afa / 100);
+    if (Math.abs(expectedBrutto - brutto) > 5) {
+      return "A beírt értékek hibásak, kérlek adj meg valós értékeket.";
+    }
+  }
+
+  return null;
+}
+
+
+    
     function calculate() {
       const known = {};
       known[document.getElementById('known1').value] = parseOrNull(document.getElementById('value1').value);
