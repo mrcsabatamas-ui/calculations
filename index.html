@@ -150,6 +150,12 @@
     const field2 = document.getElementById('known2').value;
     const field3 = document.getElementById('known3').value;
 
+    if (!field1 || !field2 || !field3) {
+  document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Kérlek válassz három értéket a listából!`;
+  return;
+}
+
+
     const selectedFields = [field1, field2, field3];
     const uniqueFields = new Set(selectedFields);
 
