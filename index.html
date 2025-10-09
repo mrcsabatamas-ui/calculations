@@ -111,9 +111,7 @@
     return isNaN(num) ? null : num;
   };
 
-  function isKnown(v) {
-    return v !== null && !isNaN(v);
-  }
+  const isKnown = (v) => v !== null && !isNaN(v);
 
   function validateInputs(values) {
     const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
@@ -137,10 +135,22 @@
   }
 
   function calculate() {
+    const field1 = document.getElementById('known1').value;
+    const field2 = document.getElementById('known2').value;
+    const field3 = document.getElementById('known3').value;
+
+    const selectedFields = [field1, field2, field3];
+    const uniqueFields = new Set(selectedFields);
+
+    if (uniqueFields.size < 3) {
+      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Kérlek, három különböző mezőt válassz!`;
+      return;
+    }
+
     const known = {};
-    known[document.getElementById('known1').value] = parseOrNull(document.getElementById('value1').value);
-    known[document.getElementById('known2').value] = parseOrNull(document.getElementById('value2').value);
-    known[document.getElementById('known3').value] = parseOrNull(document.getElementById('value3').value);
+    known[field1] = parseOrNull(document.getElementById('value1').value);
+    known[field2] = parseOrNull(document.getElementById('value2').value);
+    known[field3] = parseOrNull(document.getElementById('value3').value);
 
     let elabe = known.elabe ?? null;
     let netto = known.netto ?? null;
