@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ételköltség Kalkulátor – Teljes verzió</title>
-  <!-- Google Fonts: Outfit -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Outfit & Caveat (for the paper note handwriting feel) -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -22,6 +22,9 @@
       --success-bg: #f0fdf4;
       --success-text: #166534;
       --success-border: #bbf7d0;
+      --paper-bg: #fefce8;
+      --paper-border: #fde047;
+      --paper-text: #713f12;
     }
 
     body {
@@ -64,10 +67,6 @@
 
     .input-group {
       grid-column: span 1;
-    }
-
-    .input-group.full-width {
-      grid-column: span 2;
     }
 
     label {
@@ -143,6 +142,37 @@
       border-left-color: var(--success-text);
       border: 1px solid var(--success-border);
     }
+
+    /* Paper Note Section Styling */
+    .paper-note {
+      margin-top: 20px;
+      background-color: var(--paper-bg);
+      border: 1px dashed var(--paper-border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.03);
+      display: none;
+      position: relative;
+    }
+
+    .paper-note::before {
+      content: "📌 Számítási Napló & Függőségek";
+      display: block;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--paper-text);
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(253, 224, 71, 0.5);
+      padding-bottom: 4px;
+    }
+
+    .paper-note-content {
+      font-family: 'Caveat', cursive;
+      font-size: 1.35rem;
+      color: var(--paper-text);
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -214,9 +244,23 @@
 
     <button onclick="calculate()">Számítás indítása</button>
     <div class="result" id="output"></div>
+    <div class="paper-note" id="paperNote">
+      <div class="paper-note-content" id="paperNoteContent"></div>
+    </div>
   </div>
 
   <script>
+    const labelNames = {
+      elabe: "ELÁBÉ",
+      netto: "Nettó Eladási Ár",
+      arres: "Árrés",
+      brutto: "Bruttó Eladási Ár",
+      hk: "Haszonkulcs (%)",
+      afa: "Áfa (%)",
+      asz: "Árrésszint (%)",
+      ea: "ELÁBÉ szint (%)"
+    };
+
     const parseOrNull = (v) => {
       const num = parseFloat(v);
       return isNaN(num) ? null : num;
@@ -224,7 +268,6 @@
 
     const isKnown = (v) => v !== null && !isNaN(v);
 
-    // Prevents selecting duplicate options across the 3 dropdowns
     function updateDropdowns() {
       const s1 = document.getElementById('known1').value;
       const s2 = document.getElementById('known2').value;
@@ -237,18 +280,27 @@
         const selectElem = document.getElementById(selectId);
         for (let option of selectElem.options) {
           if (option.value === "") continue;
-          // Disable option if chosen in another dropdown
           const isChosenElsewhere = values.some((val, vIdx) => vIdx !== idx && val === option.value);
           option.disabled = isChosenElsewhere;
         }
       });
     }
 
-    function showMessage(msg, isError = true) {
+    function showMessage(msg, noteMsg = "", isError = true) {
       const output = document.getElementById('output');
+      const paperNote = document.getElementById('paperNote');
+      const paperNoteContent = document.getElementById('paperNoteContent');
+
       output.style.display = 'block';
       output.className = 'result ' + (isError ? 'error' : 'success');
       output.innerHTML = msg;
+
+      if (noteMsg) {
+        paperNote.style.display = 'block';
+        paperNoteContent.innerHTML = noteMsg;
+      } else {
+        paperNote.style.display = 'none';
+      }
     }
 
     function validateInputs(values) {
@@ -265,7 +317,7 @@
       if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
         const expectedBrutto = netto * (1 + afa / 100);
         if (Math.abs(expectedBrutto - brutto) > 5) {
-          return "A megadott nettó ár, áfa és bruttó ár nem állnak egymással arányban. Kérjük, ellenőrizze az adatokat.";
+          return "A megadott nettó ár, áfa és bruttó ár nem állnak egymással arányban.";
         }
       }
 
@@ -278,7 +330,11 @@
       const field3 = document.getElementById('known3').value;
 
       if (!field1 || !field2 || !field3) {
-        showMessage("<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát a listákból!", true);
+        showMessage(
+          "<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát a listákból!",
+          "Figyelmeztetés: Minden kalkulációhoz pontosan 3 független paraméter megadása szükséges a rendszer logikai levezetéséhez.",
+          true
+        );
         return;
       }
 
@@ -286,7 +342,11 @@
       const uniqueFields = new Set(selectedFields);
 
       if (uniqueFields.size < 3) {
-        showMessage("<strong>Érvénytelen választás:</strong> Nem választhat ki azonos értéket többször! Kérjük, három különböző mezőt adjon meg.", true);
+        showMessage(
+          "<strong>Érvénytelen választás:</strong> Nem választhat ki azonos értéket többször!",
+          "Hiba: A három bemeneti mezőnek egymástól függetlennek kell lennie (pl. ne válaszd kétszer az Áfát).",
+          true
+        );
         return;
       }
 
@@ -295,7 +355,11 @@
       const rawVal3 = document.getElementById('value3').value;
 
       if (rawVal1.trim() === "" || rawVal2.trim() === "" || rawVal3.trim() === "") {
-        showMessage("<strong>Hiányzó érték:</strong> Kérjük, töltse ki mind a három számmezőt a kiválasztott típusokhoz!", true);
+        showMessage(
+          "<strong>Hiányzó érték:</strong> Kérjük, töltse ki mind a három számmezőt!",
+          "Megjegyzés: Minden kiválasztott típushoz tartoznia kell egy számszerű értéknek is.",
+          true
+        );
         return;
       }
 
@@ -315,7 +379,11 @@
 
       const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
       if (error) {
-        showMessage(`<strong>Érvénytelen értékek:</strong> ${error}`, true);
+        showMessage(
+          `<strong>Érvénytelen értékek:</strong> ${error}`,
+          "Logikai ütközés: A megadott értékek nem felelnek meg a gasztronómiai kalkuláció alapvető arányainak.",
+          true
+        );
         return;
       }
 
@@ -341,12 +409,20 @@
 
       const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
       if (postError) {
-        showMessage(`<strong>Számítási hiba:</strong> ${postError}`, true);
+        showMessage(
+          `<strong>Számítási hiba:</strong> ${postError}`,
+          "Hurok hiba: Az iterációs lánc nem tudott koherens eredményt előállítani a megadott független változókból.",
+          true
+        );
         return;
       }
 
       if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
-        showMessage("<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes alapértéket levezetni. Kérjük, adjon meg más független paramétereket.", true);
+        showMessage(
+          "<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes alapértéket levezetni.",
+          "Függőségi hiány: A megadott 3 paraméter nem tartalmaz elegendő metszetet ahhoz, hogy a nettó árat, az ELÁBÉ-t és az árrést egyidejűleg meghatározzuk.",
+          true
+        );
         return;
       }
 
@@ -355,6 +431,16 @@
       hk = ((netto / elabe) - 1) * 100;
       asz = (arres / netto) * 100;
       ea = (elabe / netto) * 100;
+
+      // Construct educational dependency feedback for the paper note
+      const inputSummary = selectedFields.map(f => `${labelNames[f]} (${known[f] !== undefined ? known[f] : document.getElementById('value' + (selectedFields.indexOf(f)+1)).value})`).join(', ');
+      
+      const noteExplanation = `
+        A megadott 3 kiindulási adat (${inputSummary}) alapján a rendszer iterációs láncolattal fejtette ki a hiányzó értékeket.<br>
+        • A nettó eladási árat és az ELÁBÉ-t hoztuk közös nevezőre.<br>
+        • Az árrés a nettó ár és az ELÁBÉ különbségeként adódott (${netto.toFixed(1)} - ${elabe.toFixed(1)} = ${arres.toFixed(1)} Ft).<br>
+        • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) összege tökéletesen kiadja a 100%-ot.
+      `;
 
       showMessage(`
         <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
@@ -366,7 +452,7 @@
         <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
         <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
         <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
-      `, false);
+      `, noteExplanation, false);
     }
   </script>
 </body>
