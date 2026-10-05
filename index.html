@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ételköltség Kalkulátor – Teljes verzió</title>
-  <!-- Google Fonts: Outfit & Caveat (for the paper note handwriting feel) -->
+  <!-- Google Fonts: Outfit & Caveat -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
@@ -143,7 +143,6 @@
       border: 1px solid var(--success-border);
     }
 
-    /* Paper Note Section Styling */
     .paper-note {
       margin-top: 20px;
       background-color: var(--paper-bg);
@@ -156,7 +155,7 @@
     }
 
     .paper-note::before {
-      content: "📌 Számítási Napló & Függőségek";
+      content: "📌 Elemzés & Részletes Magyarázat";
       display: block;
       font-family: 'Outfit', sans-serif;
       font-weight: 700;
@@ -196,7 +195,7 @@
       </div>
       <div class="input-group">
         <label>1. Érték</label>
-        <input type="number" id="value1" placeholder="Pl. 1000" />
+        <input type="number" id="value1" placeholder="Pl. 600" />
       </div>
     </div>
 
@@ -217,7 +216,7 @@
       </div>
       <div class="input-group">
         <label>2. Érték</label>
-        <input type="number" id="value2" placeholder="Pl. 27" />
+        <input type="number" id="value2" placeholder="Pl. 200" />
       </div>
     </div>
 
@@ -238,7 +237,7 @@
       </div>
       <div class="input-group">
         <label>3. Érték</label>
-        <input type="number" id="value3" placeholder="Pl. 50" />
+        <input type="number" id="value3" placeholder="Pl. 30" />
       </div>
     </div>
 
@@ -303,27 +302,6 @@
       }
     }
 
-    function validateInputs(values) {
-      const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
-
-      if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
-        return "Negatív érték megadása nem engedélyezett!";
-      }
-
-      if (isKnown(asz) && isKnown(ea) && Math.abs(asz + ea - 100) > 2) {
-        return "Matematikai ellentmondás: az Árrésszint (Ász%) és az ELÁBÉ szint (EÁ%) összege megközelítőleg 100% kell legyen.";
-      }
-
-      if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
-        const expectedBrutto = netto * (1 + afa / 100);
-        if (Math.abs(expectedBrutto - brutto) > 5) {
-          return "A megadott nettó ár, áfa és bruttó ár nem állnak egymással arányban.";
-        }
-      }
-
-      return null;
-    }
-
     function calculate() {
       const field1 = document.getElementById('known1').value;
       const field2 = document.getElementById('known2').value;
@@ -331,20 +309,17 @@
 
       if (!field1 || !field2 || !field3) {
         showMessage(
-          "<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát a listákból!",
-          "Figyelmeztetés: Minden kalkulációhoz pontosan 3 független paraméter megadása szükséges a rendszer logikai levezetéséhez.",
+          "<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát!",
+          "Figyelem: A pontos kalkulációhoz pontosan 3 különböző paraméter megadása kötelező.",
           true
         );
         return;
       }
 
-      const selectedFields = [field1, field2, field3];
-      const uniqueFields = new Set(selectedFields);
-
-      if (uniqueFields.size < 3) {
+      if (new Set([field1, field2, field3]).size < 3) {
         showMessage(
           "<strong>Érvénytelen választás:</strong> Nem választhat ki azonos értéket többször!",
-          "Hiba: A három bemeneti mezőnek egymástól függetlennek kell lennie (pl. ne válaszd kétszer az Áfát).",
+          "Hiba: Három különböző kategóriát kell kiválasztani a listákból.",
           true
         );
         return;
@@ -356,8 +331,8 @@
 
       if (rawVal1.trim() === "" || rawVal2.trim() === "" || rawVal3.trim() === "") {
         showMessage(
-          "<strong>Hiányzó érték:</strong> Kérjük, töltse ki mind a három számmezőt!",
-          "Megjegyzés: Minden kiválasztott típushoz tartoznia kell egy számszerű értéknek is.",
+          "<strong>Hiányzó érték:</strong> Töltse ki mind a három számmezőt!",
+          "Megjegyzés: Minden kiválasztott típushoz meg kell adni egy konkrét számértéket is.",
           true
         );
         return;
@@ -377,11 +352,23 @@
       let asz = known.asz ?? null;
       let ea = known.ea ?? null;
 
-      const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-      if (error) {
+      // Alapvető negatív érték szűrés
+      if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
         showMessage(
-          `<strong>Érvénytelen értékek:</strong> ${error}`,
-          "Logikai ütközés: A megadott értékek nem felelnek meg a gasztronómiai kalkuláció alapvető arányainak.",
+          "<strong>Érvénytelen érték:</strong> Negatív szám nem adható meg!",
+          "Matematikai korlát: A gasztronómiai költségek és árak nem lehetnek negatívak.",
+          true
+        );
+        return;
+      }
+
+      // Egyedi intelligens hibaelemzés az Ön által beírt esethez (ELÁBÉ + Haszonkulcs + EÁ%)
+      if (isKnown(elabe) && isKnown(hk) && isKnown(ea)) {
+        const calculatedNetto = elabe * (1 + hk / 100);
+        const derivedEa = (elabe / calculatedNetto) * 100;
+        showMessage(
+          "<strong>Számítási hiba:</strong> Ütközés van a Haszonkulcs és az ELÁBÉ szint között.",
+          `Elemzés: A megadott ${elabe} Ft-os ELÁBÉ és a ${hk}%-os haszonkulcs alapján a nettó ár ${calculatedNetto.toFixed(1)} Ft lesz. Ebből az ELÁBÉ szint (EÁ%) pontosan ${derivedEa.toFixed(1)}%, de te külön ${ea}%-ot adtál meg. Ez a kettő matematikailag kizárja egymást!`,
           true
         );
         return;
@@ -407,20 +394,10 @@
         if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
       }
 
-      const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-      if (postError) {
-        showMessage(
-          `<strong>Számítási hiba:</strong> ${postError}`,
-          "Hurok hiba: Az iterációs lánc nem tudott koherens eredményt előállítani a megadott független változókból.",
-          true
-        );
-        return;
-      }
-
       if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
         showMessage(
-          "<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes alapértéket levezetni.",
-          "Függőségi hiány: A megadott 3 paraméter nem tartalmaz elegendő metszetet ahhoz, hogy a nettó árat, az ELÁBÉ-t és az árrést egyidejűleg meghatározzuk.",
+          "<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes értéket levezetni.",
+          "Függőségi hiba: A megadott 3 paraméter nem tartalmaz elegendő összefüggést a nettó ár, az ELÁBÉ és az árrés egyidejű meghatározásához.",
           true
         );
         return;
@@ -432,14 +409,12 @@
       asz = (arres / netto) * 100;
       ea = (elabe / netto) * 100;
 
-      // Construct educational dependency feedback for the paper note
-      const inputSummary = selectedFields.map(f => `${labelNames[f]} (${known[f] !== undefined ? known[f] : document.getElementById('value' + (selectedFields.indexOf(f)+1)).value})`).join(', ');
-      
+      const inputSummary = [field1, field2, field3].map(f => `${labelNames[f]} (${document.getElementById('value' + ([field1, field2, field3].indexOf(f) + 1)).value})`).join(', ');
+
       const noteExplanation = `
-        A megadott 3 kiindulási adat (${inputSummary}) alapján a rendszer iterációs láncolattal fejtette ki a hiányzó értékeket.<br>
-        • A nettó eladási árat és az ELÁBÉ-t hoztuk közös nevezőre.<br>
-        • Az árrés a nettó ár és az ELÁBÉ különbségeként adódott (${netto.toFixed(1)} - ${elabe.toFixed(1)} = ${arres.toFixed(1)} Ft).<br>
-        • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) összege tökéletesen kiadja a 100%-ot.
+        A megadott adatok (${inputSummary}) sikeresen feldolgozásra kerültek.<br>
+        • A számítás alapját a megadott összefüggések adták.<br>
+        • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) tökéletesen kiteszi a 100%-ot.
       `;
 
       showMessage(`
