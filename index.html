@@ -9,14 +9,14 @@
 
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #e0e7ff;
-      --bg-color: #f8fafc;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-light: #eff6ff;
+      --bg-color: #f7f5f0; /* Meleg papír háttér */
       --card-bg: #ffffff;
       --text-main: #1e293b;
       --text-muted: #64748b;
-      --border-color: #cbd5e1;
+      --border-color: #e2e8f0;
       --error-bg: #fef2f2;
       --error-text: #991b1b;
       --error-border: #fecaca;
@@ -41,40 +41,51 @@
       margin: auto;
       background: var(--card-bg);
       padding: 32px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
     }
 
-    /* Tab Navigation Styles */
+    /* Modern Flat Tab Navigation */
     .tabs {
       display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 28px;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 16px;
     }
 
     .tab-btn {
-      background: #f1f5f9;
-      border: none;
-      padding: 10px 20px;
+      background: #f9fafb;
+      border: 1px solid var(--border-color);
+      padding: 10px 18px;
       border-radius: 8px;
       font-family: 'Outfit', sans-serif;
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       transition: all 0.2s ease;
     }
 
+    .tab-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
     .tab-btn:hover {
-      background: #e2e8f0;
+      background: #f3f4f6;
       color: var(--text-main);
     }
 
     .tab-btn.active {
-      background: var(--primary);
-      color: white;
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .tab-content {
@@ -90,26 +101,26 @@
       margin-bottom: 24px;
       font-weight: 700;
       color: var(--text-main);
-      font-size: 1.75rem;
+      font-size: 1.6rem;
     }
 
     p.subtitle {
       color: var(--text-muted);
       margin-top: 0;
       margin-bottom: 24px;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
 
-    /* Calculator Styles */
+    /* Flat Notebook Input Rows */
     .input-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 20px;
-      background: #f8fafc;
+      margin-bottom: 16px;
+      background: #fafaf9;
       padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      border: 1px solid #e7e5e4;
     }
 
     .input-group {
@@ -120,59 +131,54 @@
       display: block;
       font-weight: 600;
       margin-bottom: 6px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
     }
 
     input, select {
       width: 100%;
-      padding: 10px 14px;
+      padding: 10px 12px;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
       font-family: 'Outfit', sans-serif;
       box-sizing: border-box;
-      transition: all 0.2s ease;
       background: #fff;
+      transition: border-color 0.2s;
     }
 
     input:focus, select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
     }
 
     button.calc-btn {
-      margin-top: 8px;
-      padding: 14px;
+      margin-top: 12px;
+      padding: 12px;
       width: 100%;
       background: var(--primary);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 1rem;
       font-weight: 600;
       font-family: 'Outfit', sans-serif;
       cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease;
+      transition: background 0.2s ease;
     }
 
     button.calc-btn:hover {
       background: var(--primary-hover);
     }
 
-    button.calc-btn:active {
-      transform: scale(0.99);
-    }
-
     .result {
-      margin-top: 24px;
-      background: #f1f5f9;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-size: 1rem;
-      line-height: 1.6;
-      border-left: 4px solid var(--primary);
+      margin-top: 20px;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      border-left: 3px solid var(--primary);
       display: none;
     }
 
@@ -190,15 +196,14 @@
       border: 1px solid var(--success-border);
     }
 
+    /* Paper Note Section */
     .paper-note {
-      margin-top: 20px;
+      margin-top: 16px;
       background-color: var(--paper-bg);
       border: 1px dashed var(--paper-border);
-      border-radius: 10px;
-      padding: 18px 22px;
-      box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.03);
+      border-radius: 8px;
+      padding: 16px;
       display: none;
-      position: relative;
     }
 
     .paper-note::before {
@@ -206,18 +211,18 @@
       display: block;
       font-family: 'Outfit', sans-serif;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--paper-text);
-      margin-bottom: 8px;
-      border-bottom: 1px solid rgba(253, 224, 71, 0.5);
+      margin-bottom: 6px;
+      border-bottom: 1px solid rgba(253, 224, 71, 0.4);
       padding-bottom: 4px;
     }
 
     .paper-note-content {
       font-family: 'Caveat', cursive;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       color: var(--paper-text);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     /* Dependency Map Styles */
@@ -240,9 +245,9 @@
     }
 
     .map-card {
-      background: #f8fafc;
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
+      background: #fafaf9;
+      border: 1px solid #e7e5e4;
+      border-radius: 8px;
       padding: 14px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -251,7 +256,7 @@
 
     .map-card:hover {
       border-color: var(--primary);
-      transform: translateY(-2px);
+      background: #fdfbf7;
     }
 
     .map-card.active {
@@ -263,33 +268,33 @@
 
     .map-card h4 {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .info-panel {
-      background: #f1f5f9;
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid var(--border-color);
+      background: #fafaf9;
+      border-radius: 8px;
+      padding: 18px;
+      border: 1px solid #e7e5e4;
     }
 
     .info-panel h3 {
       margin-top: 0;
       color: var(--primary);
-      font-size: 1.15rem;
-      border-bottom: 2px solid #cbd5e1;
-      padding-bottom: 8px;
+      font-size: 1.1rem;
+      border-bottom: 1px solid #e7e5e4;
+      padding-bottom: 6px;
     }
 
     .info-section {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .info-section strong {
       display: block;
       color: var(--text-main);
       font-size: 0.85rem;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .info-section span, .info-section ul {
@@ -300,16 +305,24 @@
     }
 
     .info-section li {
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Tab Navigation Bar -->
+    <!-- Modern Flat Tab Navigation with SVG Icons -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('calculator', this)">🧮 Ételköltség Kalkulátor</button>
-      <button class="tab-btn" onclick="switchTab('map', this)">🗺️ Függőségi Térkép</button>
+      <button class="tab-btn active" onclick="switchTab('calculator', this)">
+        <!-- Kalkulátor Flat Ikon -->
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        Ételköltség Kalkulátor
+      </button>
+      <button class="tab-btn" onclick="switchTab('map', this)">
+        <!-- Térkép / Hálózat Flat Ikon -->
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Függőségi Térkép
+      </button>
     </div>
 
     <!-- TAB 1: Kalkulátor -->
@@ -432,7 +445,6 @@
   </div>
 
   <script>
-    // Tab váltás logika
     function switchTab(tabId, btnElem) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -441,7 +453,6 @@
       btnElem.classList.add('active');
     }
 
-    // Kalkulátor adatai és funkciói
     const labelNames = {
       elabe: "ELÁBÉ",
       netto: "Nettó Eladási Ár",
@@ -554,7 +565,6 @@
         return;
       }
 
-      // Egyedi intelligens ellenőrzés ELÁBÉ + Haszonkulcs + EÁ% esetre
       if (isKnown(elabe) && isKnown(hk) && isKnown(ea)) {
         const calculatedNetto = elabe * (1 + hk / 100);
         const derivedEa = (elabe / calculatedNetto) * 100;
@@ -622,7 +632,6 @@
       `, noteExplanation, false);
     }
 
-    // Függőségi térkép adatai és funkciói
     const mapData = {
       elabe: {
         title: "ELÁBÉ (Eladott Áruk Beszerzési Értéke)",
