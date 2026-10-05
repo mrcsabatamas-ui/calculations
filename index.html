@@ -36,7 +36,7 @@
     }
 
     .container {
-      max-width: 750px;
+      max-width: 800px;
       margin: auto;
       background: var(--card-bg);
       padding: 32px;
@@ -220,10 +220,12 @@
       line-height: 1.4;
     }
 
+    /* Dependency Map Fixed Height Layout Styles */
     .layout-map {
       display: grid;
-      grid-template-columns: 1fr 1.2fr;
+      grid-template-columns: 1fr 1.3fr;
       gap: 20px;
+      align-items: start; /* Megakadályozza a kártyák függőleges nyúlását */
     }
 
     @media (max-width: 768px) {
@@ -265,11 +267,16 @@
       font-size: 0.85rem;
     }
 
+    /* Fix magasságú és görgethető info panel, hogy ne ugráljon a háttér */
     .info-panel {
       background: #fafaf9;
       border-radius: 8px;
       padding: 18px;
       border: 1px solid #e7e5e4;
+      height: 320px; /* Fix magasság beállítása */
+      max-height: 320px;
+      overflow-y: auto; /* Görgetősáv ha túl hosszú a szöveg */
+      box-sizing: border-box;
     }
 
     .info-panel h3 {
@@ -364,359 +371,3 @@
       <div class="input-row">
         <div class="input-group">
           <label>3. Ismert érték típusa</label>
-          <select id="known3" onchange="updateDropdowns()">
-            <option value="" disabled selected>Válassz...</option>
-            <option value="elabe">ELÁBÉ</option>
-            <option value="netto">Nettó Eladási Ár</option>
-            <option value="arres">Árrés</option>
-            <option value="brutto">Bruttó Eladási Ár</option>
-            <option value="hk">Haszonkulcs (%)</option>
-            <option value="afa">Áfa %</option>
-            <option value="asz">Árrésszint (%)</option>
-            <option value="ea">ELÁBÉ szint (%)</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>3. Érték</label>
-          <input type="number" id="value3" placeholder="Pl. 30" />
-        </div>
-      </div>
-
-      <button class="calc-btn" onclick="calculate()">Számítás indítása</button>
-      <div class="result" id="output"></div>
-      <div class="paper-note" id="paperNote">
-        <div class="paper-note-content" id="paperNoteContent"></div>
-      </div>
-    </div>
-
-    <div id="map" class="tab-content">
-      <h2>Függőségi Térkép</h2>
-      <p class="subtitle">Kattints bármelyik elemre, hogy megtekintsd a számítási szabályait és összefüggéseit!</p>
-
-      <div class="layout-map">
-        <div class="grid-cards">
-          <div class="map-card" onclick="selectMapElement('elabe')" data-id="elabe">
-            <h4>ELÁBÉ</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('netto')" data-id="netto">
-            <h4>Nettó Eladási Ár</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('arres')" data-id="arres">
-            <h4>Árrés</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('brutto')" data-id="brutto">
-            <h4>Bruttó Eladási Ár</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('hk')" data-id="hk">
-            <h4>Haszonkulcs (%)</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('afa')" data-id="afa">
-            <h4>Áfa (%)</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('asz')" data-id="asz">
-            <h4>Árrésszint (Ász%)</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('ea')" data-id="ea">
-            <h4>ELÁBÉ szint (EÁ%)</h4>
-          </div>
-        </div>
-
-        <div class="info-panel" id="infoPanel">
-          <h3>Válassz egy elemet</h3>
-          <div class="info-section">
-            <span>Kattints a bal oldali kártyák valamelyikére, hogy megismerd a kapcsolatokat és a levezetési képleteket.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function switchTab(tabId, btnElem) {
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
-      document.getElementById(tabId).classList.add('active');
-      btnElem.classList.add('active');
-    }
-
-    const labelNames = {
-      elabe: "ELÁBÉ",
-      netto: "Nettó Eladási Ár",
-      arres: "Árrés",
-      brutto: "Bruttó Eladási Ár",
-      hk: "Haszonkulcs (%)",
-      afa: "Áfa (%)",
-      asz: "Árrésszint (%)",
-      ea: "ELÁBÉ szint (%)"
-    };
-
-    const parseOrNull = (v) => {
-      const num = parseFloat(v);
-      return isNaN(num) ? null : num;
-    };
-
-    const isKnown = (v) => v !== null && !isNaN(v);
-
-    function updateDropdowns() {
-      const s1 = document.getElementById('known1').value;
-      const s2 = document.getElementById('known2').value;
-      const s3 = document.getElementById('known3').value;
-
-      const selects = ['known1', 'known2', 'known3'];
-      const values = [s1, s2, s3];
-
-      selects.forEach((selectId, idx) => {
-        const selectElem = document.getElementById(selectId);
-        for (let option of selectElem.options) {
-          if (option.value === "") continue;
-          const isChosenElsewhere = values.some((val, vIdx) => vIdx !== idx && val === option.value);
-          option.disabled = isChosenElsewhere;
-        }
-      });
-    }
-
-    function showMessage(msg, noteMsg = "", isError = true) {
-      const output = document.getElementById('output');
-      const paperNote = document.getElementById('paperNote');
-      const paperNoteContent = document.getElementById('paperNoteContent');
-
-      output.style.display = 'block';
-      output.className = 'result ' + (isError ? 'error' : 'success');
-      output.innerHTML = msg;
-
-      if (noteMsg) {
-        paperNote.style.display = 'block';
-        paperNoteContent.innerHTML = noteMsg;
-      } else {
-        paperNote.style.display = 'none';
-      }
-    }
-
-    function calculate() {
-      const field1 = document.getElementById('known1').value;
-      const field2 = document.getElementById('known2').value;
-      const field3 = document.getElementById('known3').value;
-
-      if (!field1 || !field2 || !field3) {
-        showMessage(
-          "<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát!",
-          "Figyelem: A pontos kalkulációhoz pontosan 3 különböző paraméter megadása kötelező.",
-          true
-        );
-        return;
-      }
-
-      if (new Set([field1, field2, field3]).size < 3) {
-        showMessage(
-          "<strong>Érvénytelen választás:</strong> Nem választhat ki azonos értéket többször!",
-          "Hiba: Három különböző kategóriát kell kiválasztani a listákból.",
-          true
-        );
-        return;
-      }
-
-      const rawVal1 = document.getElementById('value1').value;
-      const rawVal2 = document.getElementById('value2').value;
-      const rawVal3 = document.getElementById('value3').value;
-
-      if (rawVal1.trim() === "" || rawVal2.trim() === "" || rawVal3.trim() === "") {
-        showMessage(
-          "<strong>Hiányzó érték:</strong> Töltse ki mind a három számmezőt!",
-          "Megjegyzés: Minden kiválasztott típushoz meg kell adni egy konkrét számértéket is.",
-          true
-        );
-        return;
-      }
-
-      const known = {};
-      known[field1] = parseOrNull(rawVal1);
-      known[field2] = parseOrNull(rawVal2);
-      known[field3] = parseOrNull(rawVal3);
-
-      let elabe = known.elabe ?? null;
-      let netto = known.netto ?? null;
-      let arres = known.arres ?? null;
-      let brutto = known.brutto ?? null;
-      let hk = known.hk ?? null;
-      let afa = known.afa ?? null;
-      let asz = known.asz ?? null;
-      let ea = known.ea ?? null;
-
-      if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
-        showMessage(
-          "<strong>Érvénytelen érték:</strong> Negatív szám nem adható meg!",
-          "Matematikai korlát: A gasztronómiai költségek és árak nem lehetnek negatívak.",
-          true
-        );
-        return;
-      }
-
-      let loopCount = 0;
-      while (loopCount < 10) {
-        loopCount++;
-        if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
-        if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
-        if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
-        if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
-        if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
-        if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
-        if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
-        if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
-        if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
-        if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
-        if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
-        if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
-        if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
-        if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
-        if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
-      }
-
-      if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
-        showMessage(
-          "<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes értéket levezetni.",
-          "Függőségi hiba: A megadott 3 paraméter nem tartalmaz elegendő összefüggést a nettó ár, az ELÁBÉ és az árrés egyidejű meghatározásához.",
-          true
-        );
-        return;
-      }
-
-      brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
-      afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
-      hk = ((netto / elabe) - 1) * 100;
-      asz = (arres / netto) * 100;
-      ea = (elabe / netto) * 100;
-
-      // Szigorú utóellenőrzés: Az Árrésszint + ELÁBÉ szint összegének 100%-nak kell lennie!
-      if (Math.abs((asz + ea) - 100) > 0.1) {
-        showMessage(
-          "<strong>Matematikai ütközés:</strong> A megadott adatok ellentmondanak egymásnak.",
-          `Hiba: Az árrés (${arres.toFixed(1)} Ft) és a nettó ár (${netto.toFixed(1)} Ft) alapján az Ász% (${asz.toFixed(1)}%) és az EÁ% (${ea.toFixed(1)}%) összege ${(asz + ea).toFixed(1)}%, ami nem 100%! Kérjük, adjon meg koherens értékeket.`,
-          true
-        );
-        return;
-      }
-
-      const inputSummary = [field1, field2, field3].map(f => `${labelNames[f]} (${document.getElementById('value' + ([field1, field2, field3].indexOf(f) + 1)).value})`).join(', ');
-
-      const noteExplanation = `
-        A megadott adatok (${inputSummary}) sikeresen feldolgozásra kerültek.<br>
-        • A számítás alapját a megadott összefüggések adták.<br>
-        • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) összege pontosan 100%.
-      `;
-
-      showMessage(`
-        <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
-        <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
-        <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
-        <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
-        <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
-        <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
-        <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
-        <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
-        <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
-      `, noteExplanation, false);
-    }
-
-    const mapData = {
-      elabe: {
-        title: "ELÁBÉ (Eladott Áruk Beszerzési Értéke)",
-        desc: "Az alapanyagok beszerzési költsége.",
-        howToCalc: [
-          "Nettó eladási ár mínusz Árrés",
-          "Nettó eladási ár × ELÁBÉ szint (EÁ%)",
-          "Nettó eladási ár / (1 + Haszonkulcs / 100)",
-          "Árrés / (Haszonkulcs / 100)"
-        ]
-      },
-      netto: {
-        title: "Nettó Eladási Ár",
-        desc: "Az áru áfamentes eladási ára.",
-        howToCalc: [
-          "ELÁBÉ + Árrés",
-          "Bruttó eladási ár / (1 + Áfa / 100)",
-          "ELÁBÉ × (1 + Haszonkulcs / 100)",
-          "ELÁBÉ / (1 - Árrésszint / 100)"
-        ]
-      },
-      arres: {
-        title: "Árrés",
-        desc: "A nettó eladási ár és az ELÁBÉ pénzbeli különbsége.",
-        howToCalc: [
-          "Nettó eladási ár - ELÁBÉ",
-          "Nettó eladási ár × Árrésszint (Ász%)",
-          "ELÁBÉ × (Haszonkulcs / 100)"
-        ]
-      },
-      brutto: {
-        title: "Bruttó Eladási Ár",
-        desc: "A vásárló által fizetett végösszeg (áfával növelve).",
-        howToCalc: [
-          "Nettó eladási ár × (1 + Áfa / 100)"
-        ]
-      },
-      hk: {
-        title: "Haszonkulcs (%)",
-        desc: "Az ELÁBÉ-hoz viszonyított árrés aránya.",
-        howToCalc: [
-          "((Nettó eladási ár / ELÁBÉ) - 1) × 100",
-          "(Árrés / ELÁBÉ) × 100"
-        ]
-      },
-      afa: {
-        title: "Áfa (%)",
-        desc: "A hozzáadottérték-adó kulcsa.",
-        howToCalc: [
-          "((Bruttó eladási ár / Nettó eladási ár) - 1) × 100"
-        ]
-      },
-      asz: {
-        title: "Árrésszint (Ász%)",
-        desc: "Az árrés aránya a nettó eladási árhoz képest.",
-        howToCalc: [
-          "(Árrés / Nettó eladási ár) × 100",
-          "100 - ELÁBÉ szint (EÁ%)"
-        ]
-      },
-      ea: {
-        title: "ELÁBÉ szint (EÁ%)",
-        desc: "Az ELÁBÉ aránya a nettó eladási árhoz képest.",
-        howToCalc: [
-          "(ELÁBÉ / Nettó eladási ár) × 100",
-          "100 - Árrésszint (Ász%)"
-        ]
-      }
-    };
-
-    function selectMapElement(key) {
-      document.querySelectorAll('.map-card').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[data-id="${key}"]`).classList.add('active');
-
-      const info = mapData[key];
-      const panel = document.getElementById('infoPanel');
-
-      let html = `
-        <h3>${info.title}</h3>
-        <div class="info-section">
-          <strong>Mi ez?</strong>
-          <span>${info.desc}</span>
-        </div>
-        <div class="info-section">
-          <strong>Hogyan számítható ki más elemekből?</strong>
-          <ul>
-      `;
-
-      info.howToCalc.forEach(item => {
-        html += `<li>${item}</li>`;
-      });
-
-      html += `
-          </ul>
-        </div>
-      `;
-
-      panel.innerHTML = html;
-    }
-  </script>
-</body>
-</html>
