@@ -2,238 +2,372 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ételköltség Kalkulátor – Teljes verzió</title>
+  <!-- Google Fonts: Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-  body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --error-bg: #fef2f2;
+      --error-text: #991b1b;
+      --error-border: #fecaca;
+      --success-bg: #f0fdf4;
+      --success-text: #166534;
+      --success-border: #bbf7d0;
     }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
     .container {
       max-width: 650px;
       margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: var(--card-bg);
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
-    .input-group {
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+      font-size: 1.75rem;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 12px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-bottom: 20px;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
     }
+
+    .input-group {
+      grid-column: span 1;
+    }
+
+    .input-group.full-width {
+      grid-column: span 2;
+    }
+
     label {
       display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
     }
+
     input, select {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1em;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Outfit', sans-serif;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      background: #fff;
     }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
     button {
-      margin-top: 20px;
-      padding: 10px;
+      margin-top: 8px;
+      padding: 14px;
       width: 100%;
-      background: #0078D4;
+      background: var(--primary);
       color: white;
       border: none;
-      border-radius: 5px;
-      font-size: 1em;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
       cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
     }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
     .result {
-      margin-top: 20px;
-      background: #e8f0fe;
-      padding: 10px;
-      border-radius: 5px;
+      margin-top: 24px;
+      background: #f1f5f9;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 1rem;
+      line-height: 1.6;
+      border-left: 4px solid var(--primary);
+      display: none;
+    }
+
+    .result.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-left-color: var(--error-text);
+      border: 1px solid var(--error-border);
+    }
+
+    .result.success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-left-color: var(--success-text);
+      border: 1px solid var(--success-border);
     }
   </style>
-
-    
- 
 </head>
 <body>
   <div class="container">
     <h2>Ételköltség Kalkulátor</h2>
 
-    <div class="input-group">
-      <label>1. ismert érték:</label>
-      <select id="known1">
-        <option value="" disabled selected>Válassz értéket!</option>
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value1" />
+    <div class="input-row">
+      <div class="input-group">
+        <label>1. Ismert érték típusa</label>
+        <select id="known1" onchange="updateDropdowns()">
+          <option value="" disabled selected>Válassz...</option>
+          <option value="elabe">ELÁBÉ</option>
+          <option value="netto">Nettó Eladási Ár</option>
+          <option value="arres">Árrés</option>
+          <option value="brutto">Bruttó Eladási Ár</option>
+          <option value="hk">Haszonkulcs (%)</option>
+          <option value="afa">Áfa %</option>
+          <option value="asz">Árrésszint (%)</option>
+          <option value="ea">ELÁBÉ szint (%)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>1. Érték</label>
+        <input type="number" id="value1" placeholder="Pl. 1000" />
+      </div>
     </div>
 
-    <div class="input-group">
-      <label>2. ismert érték:</label>
-      <select id="known2">
-        <option value="" disabled selected>Válassz értéket!</option>
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value2" />
+    <div class="input-row">
+      <div class="input-group">
+        <label>2. Ismert érték típusa</label>
+        <select id="known2" onchange="updateDropdowns()">
+          <option value="" disabled selected>Válassz...</option>
+          <option value="elabe">ELÁBÉ</option>
+          <option value="netto">Nettó Eladási Ár</option>
+          <option value="arres">Árrés</option>
+          <option value="brutto">Bruttó Eladási Ár</option>
+          <option value="hk">Haszonkulcs (%)</option>
+          <option value="afa">Áfa %</option>
+          <option value="asz">Árrésszint (%)</option>
+          <option value="ea">ELÁBÉ szint (%)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>2. Érték</label>
+        <input type="number" id="value2" placeholder="Pl. 27" />
+      </div>
     </div>
 
-    <div class="input-group">
-      <label>3. ismert érték:</label>
-      <select id="known3">
-        <option value="" disabled selected>Válassz értéket!</option>
-        <option value="elabe">ELÁBÉ</option>
-        <option value="netto">Nettó Eladási Ár</option>
-        <option value="arres">Árrés</option>
-        <option value="brutto">Bruttó Eladási Ár</option>
-        <option value="hk">Haszonkulcs (%)</option>
-        <option value="afa">Áfa %</option>
-        <option value="asz">Árrésszint (%)</option>
-        <option value="ea">ELÁBÉ szint (%)</option>
-      </select>
-      <input type="number" id="value3" />
+    <div class="input-row">
+      <div class="input-group">
+        <label>3. Ismert érték típusa</label>
+        <select id="known3" onchange="updateDropdowns()">
+          <option value="" disabled selected>Válassz...</option>
+          <option value="elabe">ELÁBÉ</option>
+          <option value="netto">Nettó Eladási Ár</option>
+          <option value="arres">Árrés</option>
+          <option value="brutto">Bruttó Eladási Ár</option>
+          <option value="hk">Haszonkulcs (%)</option>
+          <option value="afa">Áfa %</option>
+          <option value="asz">Árrésszint (%)</option>
+          <option value="ea">ELÁBÉ szint (%)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>3. Érték</label>
+        <input type="number" id="value3" placeholder="Pl. 50" />
+      </div>
     </div>
 
-    <button onclick="calculate()">Számítás</button>
+    <button onclick="calculate()">Számítás indítása</button>
     <div class="result" id="output"></div>
   </div>
 
- <script>
-  const parseOrNull = (v) => {
-    const num = parseFloat(v);
-    return isNaN(num) ? null : num;
-  };
+  <script>
+    const parseOrNull = (v) => {
+      const num = parseFloat(v);
+      return isNaN(num) ? null : num;
+    };
 
-  const isKnown = (v) => v !== null && !isNaN(v);
+    const isKnown = (v) => v !== null && !isNaN(v);
 
-  function validateInputs(values) {
-    const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
+    // Prevents selecting duplicate options across the 3 dropdowns
+    function updateDropdowns() {
+      const s1 = document.getElementById('known1').value;
+      const s2 = document.getElementById('known2').value;
+      const s3 = document.getElementById('known3').value;
 
-    if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v < 0)) {
-      return "Negatív érték nem lehet!";
+      const selects = ['known1', 'known2', 'known3'];
+      const values = [s1, s2, s3];
+
+      selects.forEach((selectId, idx) => {
+        const selectElem = document.getElementById(selectId);
+        for (let option of selectElem.options) {
+          if (option.value === "") continue;
+          // Disable option if chosen in another dropdown
+          const isChosenElsewhere = values.some((val, vIdx) => vIdx !== idx && val === option.value);
+          option.disabled = isChosenElsewhere;
+        }
+      });
     }
 
-    if (isKnown(asz) && isKnown(ea) && Math.abs(asz + ea - 100) > 2) {
-      return "Az Ász% + EÁ% nem ad ki 100%-ot.";
+    function showMessage(msg, isError = true) {
+      const output = document.getElementById('output');
+      output.style.display = 'block';
+      output.className = 'result ' + (isError ? 'error' : 'success');
+      output.innerHTML = msg;
     }
 
-    if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
-      const expectedBrutto = netto * (1 + afa / 100);
-      if (Math.abs(expectedBrutto - brutto) > 5) {
-        return "A beírt értékek hibásak, kérlek adj meg valós értékeket.";
+    function validateInputs(values) {
+      const { elabe, netto, arres, hk, afa, asz, ea, brutto } = values;
+
+      if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
+        return "Negatív érték megadása nem engedélyezett!";
       }
+
+      if (isKnown(asz) && isKnown(ea) && Math.abs(asz + ea - 100) > 2) {
+        return "Matematikai ellentmondás: az Árrésszint (Ász%) és az ELÁBÉ szint (EÁ%) összege megközelítőleg 100% kell legyen.";
+      }
+
+      if (isKnown(netto) && isKnown(afa) && isKnown(brutto)) {
+        const expectedBrutto = netto * (1 + afa / 100);
+        if (Math.abs(expectedBrutto - brutto) > 5) {
+          return "A megadott nettó ár, áfa és bruttó ár nem állnak egymással arányban. Kérjük, ellenőrizze az adatokat.";
+        }
+      }
+
+      return null;
     }
 
-    return null;
-  }
+    function calculate() {
+      const field1 = document.getElementById('known1').value;
+      const field2 = document.getElementById('known2').value;
+      const field3 = document.getElementById('known3').value;
 
-  function calculate() {
-    const field1 = document.getElementById('known1').value;
-    const field2 = document.getElementById('known2').value;
-    const field3 = document.getElementById('known3').value;
+      if (!field1 || !field2 || !field3) {
+        showMessage("<strong>Hiányzó adatok:</strong> Kérjük, válassza ki mind a három mező típusát a listákból!", true);
+        return;
+      }
 
-    if (!field1 || !field2 || !field3) {
-  document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Kérlek válassz három értéket a listából!`;
-  return;
-}
+      const selectedFields = [field1, field2, field3];
+      const uniqueFields = new Set(selectedFields);
 
+      if (uniqueFields.size < 3) {
+        showMessage("<strong>Érvénytelen választás:</strong> Nem választhat ki azonos értéket többször! Kérjük, három különböző mezőt adjon meg.", true);
+        return;
+      }
 
-    const selectedFields = [field1, field2, field3];
-    const uniqueFields = new Set(selectedFields);
+      const rawVal1 = document.getElementById('value1').value;
+      const rawVal2 = document.getElementById('value2').value;
+      const rawVal3 = document.getElementById('value3').value;
 
-    if (uniqueFields.size < 3) {
-      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Kérlek, három különböző mezőt válassz!`;
-      return;
+      if (rawVal1.trim() === "" || rawVal2.trim() === "" || rawVal3.trim() === "") {
+        showMessage("<strong>Hiányzó érték:</strong> Kérjük, töltse ki mind a három számmezőt a kiválasztott típusokhoz!", true);
+        return;
+      }
+
+      const known = {};
+      known[field1] = parseOrNull(rawVal1);
+      known[field2] = parseOrNull(rawVal2);
+      known[field3] = parseOrNull(rawVal3);
+
+      let elabe = known.elabe ?? null;
+      let netto = known.netto ?? null;
+      let arres = known.arres ?? null;
+      let brutto = known.brutto ?? null;
+      let hk = known.hk ?? null;
+      let afa = known.afa ?? null;
+      let asz = known.asz ?? null;
+      let ea = known.ea ?? null;
+
+      const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
+      if (error) {
+        showMessage(`<strong>Érvénytelen értékek:</strong> ${error}`, true);
+        return;
+      }
+
+      let loopCount = 0;
+      while (loopCount < 10) {
+        loopCount++;
+        if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
+        if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
+        if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
+        if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
+        if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
+        if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
+        if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
+        if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
+        if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
+        if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
+        if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
+        if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
+        if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
+        if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
+        if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
+      }
+
+      const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
+      if (postError) {
+        showMessage(`<strong>Számítási hiba:</strong> ${postError}`, true);
+        return;
+      }
+
+      if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
+        showMessage("<strong>Nem teljesíthető számítás:</strong> A megadott kombinációból nem sikerült az összes alapértéket levezetni. Kérjük, adjon meg más független paramétereket.", true);
+        return;
+      }
+
+      brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
+      afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
+      hk = ((netto / elabe) - 1) * 100;
+      asz = (arres / netto) * 100;
+      ea = (elabe / netto) * 100;
+
+      showMessage(`
+        <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
+        <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
+        <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
+        <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
+        <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
+        <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
+        <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
+        <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
+        <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
+      `, false);
     }
-
-    const known = {};
-    known[field1] = parseOrNull(document.getElementById('value1').value);
-    known[field2] = parseOrNull(document.getElementById('value2').value);
-    known[field3] = parseOrNull(document.getElementById('value3').value);
-
-    let elabe = known.elabe ?? null;
-    let netto = known.netto ?? null;
-    let arres = known.arres ?? null;
-    let brutto = known.brutto ?? null;
-    let hk = known.hk ?? null;
-    let afa = known.afa ?? null;
-    let asz = known.asz ?? null;
-    let ea = known.ea ?? null;
-
-    const error = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-    if (error) {
-      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${error}`;
-      return;
-    }
-
-    let loopCount = 0;
-    while (loopCount < 10) {
-      loopCount++;
-      if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
-      if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
-      if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
-      if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
-      if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
-      if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
-      if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
-      if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
-      if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
-      if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
-      if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
-      if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
-      if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
-      if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
-      if (!isKnown(elabe) && isKnown(hk) && isKnown(arres)) { elabe = arres / (hk / 100); netto = elabe * (1 + hk / 100); }
-    }
-
-    const postError = validateInputs({ elabe, netto, arres, hk, afa, asz, ea, brutto });
-    if (postError) {
-      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> ${postError}`;
-      return;
-    }
-
-    if (!isKnown(netto) || !isKnown(elabe) || !isKnown(arres)) {
-      document.getElementById('output').innerHTML = `<strong>Hiba:</strong> Nem sikerült kiszámítani az összes értéket.`;
-      return;
-    }
-
-    brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
-    afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
-    hk = ((netto / elabe) - 1) * 100;
-    asz = (arres / netto) * 100;
-    ea = (elabe / netto) * 100;
-
-    document.getElementById('output').innerHTML = `
-      <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
-      <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
-      <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
-      <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
-      <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
-      <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
-      <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
-      <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
-      <strong>Ász% + EÁ%:</strong> ${(asz + ea).toFixed(1)}%
-    `;
-  }
-</script>
-
-
-    
   </script>
 </body>
 </html>
-                                                   
