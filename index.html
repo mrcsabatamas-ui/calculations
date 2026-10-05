@@ -220,12 +220,11 @@
       line-height: 1.4;
     }
 
-    /* Dependency Map Fixed Height Layout Styles */
     .layout-map {
       display: grid;
       grid-template-columns: 1fr 1.3fr;
       gap: 20px;
-      align-items: start; /* Megakadályozza a kártyák függőleges nyúlását */
+      align-items: start;
     }
 
     @media (max-width: 768px) {
@@ -267,15 +266,14 @@
       font-size: 0.85rem;
     }
 
-    /* Fix magasságú és görgethető info panel, hogy ne ugráljon a háttér */
     .info-panel {
       background: #fafaf9;
       border-radius: 8px;
       padding: 18px;
       border: 1px solid #e7e5e4;
-      height: 320px; /* Fix magasság beállítása */
+      height: 320px;
       max-height: 320px;
-      overflow-y: auto; /* Görgetősáv ha túl hosszú a szöveg */
+      overflow-y: auto;
       box-sizing: border-box;
     }
 
@@ -323,6 +321,7 @@
       </button>
     </div>
 
+    <!-- Kalkulátor Tab -->
     <div id="calculator" class="tab-content active">
       <h2>Ételköltség Kalkulátor</h2>
 
@@ -371,3 +370,78 @@
       <div class="input-row">
         <div class="input-group">
           <label>3. Ismert érték típusa</label>
+          <select id="known3" onchange="updateDropdowns()">
+            <option value="" disabled selected>Válassz...</option>
+            <option value="elabe">ELÁBÉ</option>
+            <option value="netto">Nettó Eladási Ár</option>
+            <option value="arres">Árrés</option>
+            <option value="brutto">Bruttó Eladási Ár</option>
+            <option value="hk">Haszonkulcs (%)</option>
+            <option value="afa">Áfa %</option>
+            <option value="asz">Árrésszint (%)</option>
+            <option value="ea">ELÁBÉ szint (%)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>3. Érték</label>
+          <input type="number" id="value3" placeholder="Pl. 30" />
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Számítás indítása</button>
+      <div class="result" id="output"></div>
+      <div class="paper-note" id="paperNote">
+        <div class="paper-note-content" id="paperNoteContent"></div>
+      </div>
+    </div>
+
+    <!-- Függőségi Térkép Tab -->
+    <div id="map" class="tab-content">
+      <h2>Függőségi Térkép</h2>
+      <p class="subtitle">Kattints bármelyik elemre, hogy megtekintsd a számítási szabályait és összefüggéseit!</p>
+
+      <div class="layout-map">
+        <div class="grid-cards">
+          <div class="map-card" onclick="selectMapElement('elabe')" data-id="elabe">
+            <h4>ELÁBÉ</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('netto')" data-id="netto">
+            <h4>Nettó Eladási Ár</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('arres')" data-id="arres">
+            <h4>Árrés</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('brutto')" data-id="brutto">
+            <h4>Bruttó Eladási Ár</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('hk')" data-id="hk">
+            <h4>Haszonkulcs (%)</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('afa')" data-id="afa">
+            <h4>Áfa (%)</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('asz')" data-id="asz">
+            <h4>Árrésszint (Ász%)</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('ea')" data-id="ea">
+            <h4>ELÁBÉ szint (EÁ%)</h4>
+          </div>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+          <h3>Válassz egy elemet</h3>
+          <div class="info-section">
+            <span>Kattints a bal oldali kártyák valamelyikére, hogy megismerd a kapcsolatokat és a levezetési képleteket.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Biztosított tab váltás logikai függvény
+    function switchTab(tabId, btnElem) {
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.
