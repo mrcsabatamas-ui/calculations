@@ -322,7 +322,7 @@
     </div>
 
     <!-- Kalkulátor Tab -->
-    <div id="calculator" class="tab-content active">
+    <div id="calculator" class="tab-content active" style="display: block;">
       <h2>Ételköltség Kalkulátor</h2>
 
       <div class="input-row">
@@ -396,7 +396,7 @@
     </div>
 
     <!-- Függőségi Térkép Tab -->
-    <div id="map" class="tab-content">
+    <div id="map" class="tab-content" style="display: none;">
       <h2>Függőségi Térkép</h2>
       <p class="subtitle">Kattints bármelyik elemre, hogy megtekintsd a számítási szabályait és összefüggéseit!</p>
 
@@ -439,10 +439,11 @@
   </div>
 
   <script>
-    // Biztosított tab váltás logikai függvény
+    // Biztosított tab váltás logikai függvény inline style felülírással
     function switchTab(tabId, btnElem) {
       document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
+        content.style.display = 'none';
       });
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -451,6 +452,7 @@
       const targetTab = document.getElementById(tabId);
       if (targetTab) {
         targetTab.classList.add('active');
+        targetTab.style.display = 'block';
       }
       if (btnElem) {
         btnElem.classList.add('active');
