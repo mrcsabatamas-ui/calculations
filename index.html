@@ -227,16 +227,20 @@
       align-items: start;
     }
 
+    .grid-cards {
+      /* Módosítva 3 oszloposra, hogy a 9 kártya szép négyzetet alkosson */
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
     @media (max-width: 768px) {
       .layout-map {
         grid-template-columns: 1fr;
       }
-    }
-
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      .grid-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .map-card {
@@ -247,6 +251,10 @@
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
     }
 
     .map-card:hover {
@@ -325,12 +333,14 @@
     <div id="calculator" class="tab-content active" style="display: block;">
       <h2>Ételköltség Kalkulátor</h2>
 
+      <!-- Bemenet 1 -->
       <div class="input-row">
         <div class="input-group">
           <label>1. Ismert érték típusa</label>
           <select id="known1" onchange="updateDropdowns()">
             <option value="" disabled selected>Válassz...</option>
-            <option value="elabe">ELÁBÉ</option>
+            <option value="elabe">ELÁBÉ (Nettó beszerzés)</option>
+            <option value="brutto_elabe">Bruttó Beszerzési Ár</option>
             <option value="netto">Nettó Eladási Ár</option>
             <option value="arres">Árrés</option>
             <option value="brutto">Bruttó Eladási Ár</option>
@@ -346,12 +356,14 @@
         </div>
       </div>
 
+      <!-- Bemenet 2 -->
       <div class="input-row">
         <div class="input-group">
           <label>2. Ismert érték típusa</label>
           <select id="known2" onchange="updateDropdowns()">
             <option value="" disabled selected>Válassz...</option>
-            <option value="elabe">ELÁBÉ</option>
+            <option value="elabe">ELÁBÉ (Nettó beszerzés)</option>
+            <option value="brutto_elabe">Bruttó Beszerzési Ár</option>
             <option value="netto">Nettó Eladási Ár</option>
             <option value="arres">Árrés</option>
             <option value="brutto">Bruttó Eladási Ár</option>
@@ -367,12 +379,14 @@
         </div>
       </div>
 
+      <!-- Bemenet 3 -->
       <div class="input-row">
         <div class="input-group">
           <label>3. Ismert érték típusa</label>
           <select id="known3" onchange="updateDropdowns()">
             <option value="" disabled selected>Válassz...</option>
-            <option value="elabe">ELÁBÉ</option>
+            <option value="elabe">ELÁBÉ (Nettó beszerzés)</option>
+            <option value="brutto_elabe">Bruttó Beszerzési Ár</option>
             <option value="netto">Nettó Eladási Ár</option>
             <option value="arres">Árrés</option>
             <option value="brutto">Bruttó Eladási Ár</option>
@@ -402,9 +416,17 @@
 
       <div class="layout-map">
         <div class="grid-cards">
+          <!-- Hozzáadva az új kártya és átrendezve -->
           <div class="map-card" onclick="selectMapElement('elabe')" data-id="elabe">
-            <h4>ELÁBÉ</h4>
+            <h4>ELÁBÉ (Nettó)</h4>
           </div>
+          <div class="map-card" onclick="selectMapElement('brutto_elabe')" data-id="brutto_elabe">
+            <h4>Bruttó Beszerzés</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('afa')" data-id="afa">
+            <h4>Áfa (%)</h4>
+          </div>
+          
           <div class="map-card" onclick="selectMapElement('netto')" data-id="netto">
             <h4>Nettó Eladási Ár</h4>
           </div>
@@ -414,11 +436,9 @@
           <div class="map-card" onclick="selectMapElement('brutto')" data-id="brutto">
             <h4>Bruttó Eladási Ár</h4>
           </div>
+          
           <div class="map-card" onclick="selectMapElement('hk')" data-id="hk">
             <h4>Haszonkulcs (%)</h4>
-          </div>
-          <div class="map-card" onclick="selectMapElement('afa')" data-id="afa">
-            <h4>Áfa (%)</h4>
           </div>
           <div class="map-card" onclick="selectMapElement('asz')" data-id="asz">
             <h4>Árrésszint (Ász%)</h4>
@@ -439,7 +459,6 @@
   </div>
 
   <script>
-    // Biztosított tab váltás logikai függvény inline style felülírással
     function switchTab(tabId, btnElem) {
       document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
@@ -461,6 +480,7 @@
 
     const labelNames = {
       elabe: "ELÁBÉ",
+      brutto_elabe: "Bruttó Beszerzési Ár", // Új címke
       netto: "Nettó Eladási Ár",
       arres: "Árrés",
       brutto: "Bruttó Eladási Ár",
@@ -554,6 +574,7 @@
       known[field3] = parseOrNull(rawVal3);
 
       let elabe = known.elabe ?? null;
+      let brutto_elabe = known.brutto_elabe ?? null; // Új változó
       let netto = known.netto ?? null;
       let arres = known.arres ?? null;
       let brutto = known.brutto ?? null;
@@ -562,7 +583,7 @@
       let asz = known.asz ?? null;
       let ea = known.ea ?? null;
 
-      if ([elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
+      if ([elabe, brutto_elabe, netto, arres, hk, afa, asz, ea, brutto].some(v => v !== null && v < 0)) {
         showMessage(
           "<strong>Érvénytelen érték:</strong> Negatív szám nem adható meg!",
           "Matematikai korlát: A gasztronómiai költségek és árak nem lehetnek negatívak.",
@@ -574,17 +595,26 @@
       let loopCount = 0;
       while (loopCount < 10) {
         loopCount++;
+        // Új összefüggések a bruttó beszerzési árra (ugyanazzal az áfakulccsal számolva)
+        if (!isKnown(elabe) && isKnown(brutto_elabe) && isKnown(afa)) elabe = brutto_elabe / (1 + afa / 100);
+        if (!isKnown(brutto_elabe) && isKnown(elabe) && isKnown(afa)) brutto_elabe = elabe * (1 + afa / 100);
+        if (!isKnown(afa) && isKnown(brutto_elabe) && isKnown(elabe)) afa = ((brutto_elabe / elabe) - 1) * 100;
+
+        // Eredeti összefüggések
         if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
         if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
         if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
+        
         if (!isKnown(arres) && isKnown(netto) && isKnown(asz)) arres = netto * (asz / 100);
         if (!isKnown(elabe) && isKnown(netto) && isKnown(ea)) elabe = netto * (ea / 100);
         if (!isKnown(asz) && isKnown(arres) && isKnown(netto)) asz = (arres / netto) * 100;
         if (!isKnown(ea) && isKnown(elabe) && isKnown(netto)) ea = (elabe / netto) * 100;
+        
         if (!isKnown(netto) && isKnown(elabe) && isKnown(asz)) { netto = elabe / (1 - asz / 100); arres = netto - elabe; }
         if (!isKnown(netto) && isKnown(elabe) && isKnown(hk)) netto = elabe * (1 + hk / 100);
         if (!isKnown(elabe) && isKnown(netto) && isKnown(hk)) elabe = netto / (1 + hk / 100);
         if (!isKnown(hk) && isKnown(netto) && isKnown(elabe)) hk = ((netto / elabe) - 1) * 100;
+        
         if (!isKnown(arres) && isKnown(netto) && isKnown(elabe)) arres = netto - elabe;
         if (!isKnown(netto) && isKnown(elabe) && isKnown(arres)) netto = elabe + arres;
         if (!isKnown(elabe) && isKnown(netto) && isKnown(arres)) elabe = netto - arres;
@@ -600,11 +630,18 @@
         return;
       }
 
-      brutto = isKnown(brutto) ? brutto : netto * (1 + afa / 100);
-      afa = isKnown(afa) ? afa : ((brutto / netto) - 1) * 100;
+      // Véglegesítések, ha valami még lemaradt volna (pl afa alapján)
+      if (brutto === null && netto !== null && afa !== null) brutto = netto * (1 + afa / 100);
+      if (afa === null && brutto !== null && netto !== null) afa = ((brutto / netto) - 1) * 100;
+      
       hk = ((netto / elabe) - 1) * 100;
       asz = (arres / netto) * 100;
       ea = (elabe / netto) * 100;
+
+      // Kiszámoljuk a bruttó beszerzési árat, ha lehetséges (ehhez ELÁBÉ és ÁFA kell)
+      if (brutto_elabe === null && elabe !== null && afa !== null) {
+        brutto_elabe = elabe * (1 + afa / 100);
+      }
 
       if (Math.abs((asz + ea) - 100) > 0.1) {
         showMessage(
@@ -623,12 +660,18 @@
         • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) összege pontosan 100%.
       `;
 
+      // Az outputhoz hozzáadtam a Bruttó Beszerzési Árat is (ha ki tudtuk számolni)
+      const bruttoElabeSor = isKnown(brutto_elabe) 
+        ? `<strong>Bruttó Beszerzési Ár:</strong> ${brutto_elabe.toFixed(1)} Ft<br>` 
+        : `<strong>Bruttó Beszerzési Ár:</strong> (Nincs elég adat az Áfához)<br>`;
+
       showMessage(`
-        <strong>ELÁBÉ:</strong> ${elabe.toFixed(1)} Ft<br>
+        <strong>ELÁBÉ (Nettó):</strong> ${elabe.toFixed(1)} Ft<br>
+        ${bruttoElabeSor}
         <strong>Nettó Eladási Ár:</strong> ${netto.toFixed(1)} Ft<br>
         <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
-        <strong>Bruttó Eladási Ár:</strong> ${brutto.toFixed(1)} Ft<br>
-        <strong>Áfa %:</strong> ${afa.toFixed(2)}%<br>
+        <strong>Bruttó Eladási Ár:</strong> ${brutto !== null ? brutto.toFixed(1) : '?'} Ft<br>
+        <strong>Áfa %:</strong> ${afa !== null ? afa.toFixed(2) + '%' : 'Ismeretlen'}<br>
         <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
         <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
         <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
@@ -638,13 +681,21 @@
 
     const mapData = {
       elabe: {
-        title: "ELÁBÉ (Eladott Áruk Beszerzési Értéke)",
-        desc: "Az alapanyagok beszerzési költsége.",
+        title: "ELÁBÉ (Nettó Beszerzési Érték)",
+        desc: "Az alapanyagok nettó (áfa nélküli) beszerzési költsége.",
         howToCalc: [
           "Nettó eladási ár mínusz Árrés",
           "Nettó eladási ár × ELÁBÉ szint (EÁ%)",
           "Nettó eladási ár / (1 + Haszonkulcs / 100)",
-          "Árrés / (Haszonkulcs / 100)"
+          "Árrés / (Haszonkulcs / 100)",
+          "Bruttó beszerzési ár / (1 + Áfa / 100)"
+        ]
+      },
+      brutto_elabe: {
+        title: "Bruttó Beszerzési Ár",
+        desc: "Az alapanyagok áfával növelt beszerzési költsége.",
+        howToCalc: [
+          "ELÁBÉ × (1 + Áfa / 100)"
         ]
       },
       netto: {
@@ -683,9 +734,10 @@
       },
       afa: {
         title: "Áfa (%)",
-        desc: "A hozzáadottérték-adó kulcsa.",
+        desc: "A hozzáadottérték-adó kulcsa (eladásra és beszerzésre egyaránt).",
         howToCalc: [
-          "((Bruttó eladási ár / Nettó eladási ár) - 1) × 100"
+          "((Bruttó eladási ár / Nettó eladási ár) - 1) × 100",
+          "((Bruttó beszerzési ár / ELÁBÉ) - 1) × 100"
         ]
       },
       asz: {
