@@ -228,7 +228,6 @@
     }
 
     .grid-cards {
-      /* Módosítva 3 oszloposra, hogy a 9 kártya szép négyzetet alkosson */
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
@@ -313,6 +312,13 @@
 
     .info-section li {
       margin-bottom: 2px;
+    }
+    
+    /* Új stílus az elválasztó vonalakhoz az eredménylistában */
+    .result-divider {
+      border: 0; 
+      border-top: 1px solid #cbd5e1; 
+      margin: 12px 0;
     }
   </style>
 </head>
@@ -416,7 +422,7 @@
 
       <div class="layout-map">
         <div class="grid-cards">
-          <!-- Hozzáadva az új kártya és átrendezve -->
+          <!-- Bővített 12 kártyás rács -->
           <div class="map-card" onclick="selectMapElement('elabe')" data-id="elabe">
             <h4>ELÁBÉ (Nettó)</h4>
           </div>
@@ -437,6 +443,17 @@
             <h4>Bruttó Eladási Ár</h4>
           </div>
           
+          <!-- Hozzáadva a 3 új kártya az áfa értékeknek -->
+          <div class="map-card" onclick="selectMapElement('beszerzesi_afa')" data-id="beszerzesi_afa">
+            <h4>Beszerzési Áfa (Ft)</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('ertekesitesi_afa')" data-id="ertekesitesi_afa">
+            <h4>Értékesítési Áfa (Ft)</h4>
+          </div>
+          <div class="map-card" onclick="selectMapElement('afa_egyenleg')" data-id="afa_egyenleg">
+            <h4>Áfa Egyenleg (Ft)</h4>
+          </div>
+
           <div class="map-card" onclick="selectMapElement('hk')" data-id="hk">
             <h4>Haszonkulcs (%)</h4>
           </div>
@@ -480,7 +497,7 @@
 
     const labelNames = {
       elabe: "ELÁBÉ",
-      brutto_elabe: "Bruttó Beszerzési Ár", // Új címke
+      brutto_elabe: "Bruttó Beszerzési Ár",
       netto: "Nettó Eladási Ár",
       arres: "Árrés",
       brutto: "Bruttó Eladási Ár",
@@ -574,7 +591,7 @@
       known[field3] = parseOrNull(rawVal3);
 
       let elabe = known.elabe ?? null;
-      let brutto_elabe = known.brutto_elabe ?? null; // Új változó
+      let brutto_elabe = known.brutto_elabe ?? null;
       let netto = known.netto ?? null;
       let arres = known.arres ?? null;
       let brutto = known.brutto ?? null;
@@ -595,12 +612,10 @@
       let loopCount = 0;
       while (loopCount < 10) {
         loopCount++;
-        // Új összefüggések a bruttó beszerzési árra (ugyanazzal az áfakulccsal számolva)
         if (!isKnown(elabe) && isKnown(brutto_elabe) && isKnown(afa)) elabe = brutto_elabe / (1 + afa / 100);
         if (!isKnown(brutto_elabe) && isKnown(elabe) && isKnown(afa)) brutto_elabe = elabe * (1 + afa / 100);
         if (!isKnown(afa) && isKnown(brutto_elabe) && isKnown(elabe)) afa = ((brutto_elabe / elabe) - 1) * 100;
 
-        // Eredeti összefüggések
         if (!isKnown(netto) && isKnown(brutto) && isKnown(afa)) netto = brutto / (1 + afa / 100);
         if (!isKnown(brutto) && isKnown(netto) && isKnown(afa)) brutto = netto * (1 + afa / 100);
         if (!isKnown(afa) && isKnown(brutto) && isKnown(netto)) afa = ((brutto / netto) - 1) * 100;
@@ -630,7 +645,6 @@
         return;
       }
 
-      // Véglegesítések, ha valami még lemaradt volna (pl afa alapján)
       if (brutto === null && netto !== null && afa !== null) brutto = netto * (1 + afa / 100);
       if (afa === null && brutto !== null && netto !== null) afa = ((brutto / netto) - 1) * 100;
       
@@ -638,7 +652,6 @@
       asz = (arres / netto) * 100;
       ea = (elabe / netto) * 100;
 
-      // Kiszámoljuk a bruttó beszerzési árat, ha lehetséges (ehhez ELÁBÉ és ÁFA kell)
       if (brutto_elabe === null && elabe !== null && afa !== null) {
         brutto_elabe = elabe * (1 + afa / 100);
       }
@@ -651,6 +664,14 @@
         );
         return;
       }
+      
+      // ----------------------------------------------------
+      // ÚJ ÁFA ÉRTÉKEK KISZÁMÍTÁSA (Pénzben / Forintban)
+      // ----------------------------------------------------
+      let ertekesitesi_afa = (isKnown(brutto) && isKnown(netto)) ? (brutto - netto) : null;
+      let beszerzesi_afa = (isKnown(brutto_elabe) && isKnown(elabe)) ? (brutto_elabe - elabe) : null;
+      let afa_egyenleg = (isKnown(ertekesitesi_afa) && isKnown(beszerzesi_afa)) ? (ertekesitesi_afa - beszerzesi_afa) : null;
+
 
       const inputSummary = [field1, field2, field3].map(f => `${labelNames[f]} (${document.getElementById('value' + ([field1, field2, field3].indexOf(f) + 1)).value})`).join(', ');
 
@@ -660,10 +681,27 @@
         • Az Árrésszint (Ász%: ${asz.toFixed(1)}%) és az ELÁBÉ szint (EÁ%: ${ea.toFixed(1)}%) összege pontosan 100%.
       `;
 
-      // Az outputhoz hozzáadtam a Bruttó Beszerzési Árat is (ha ki tudtuk számolni)
       const bruttoElabeSor = isKnown(brutto_elabe) 
         ? `<strong>Bruttó Beszerzési Ár:</strong> ${brutto_elabe.toFixed(1)} Ft<br>` 
         : `<strong>Bruttó Beszerzési Ár:</strong> (Nincs elég adat az Áfához)<br>`;
+
+      // Az új áfa számításokat egy elválasztó vonallal elkülönítve jelenítjük meg
+      let afaEgyenlegHtml = "";
+      if (isKnown(afa_egyenleg)) {
+        afaEgyenlegHtml = `
+          <hr class="result-divider">
+          <strong>Értékesítési Áfa (Ft):</strong> ${ertekesitesi_afa.toFixed(1)} Ft<br>
+          <strong>Beszerzési Áfa (Ft):</strong> ${beszerzesi_afa.toFixed(1)} Ft<br>
+          <strong>Áfa Egyenleg:</strong> ${afa_egyenleg.toFixed(1)} Ft<br>
+          <hr class="result-divider">
+        `;
+      } else {
+         afaEgyenlegHtml = `
+          <hr class="result-divider">
+          <strong>Áfa Egyenleg:</strong> (Nincs elég adat a kiszámításához)<br>
+          <hr class="result-divider">
+        `;
+      }
 
       showMessage(`
         <strong>ELÁBÉ (Nettó):</strong> ${elabe.toFixed(1)} Ft<br>
@@ -672,6 +710,7 @@
         <strong>Árrés:</strong> ${arres.toFixed(1)} Ft<br>
         <strong>Bruttó Eladási Ár:</strong> ${brutto !== null ? brutto.toFixed(1) : '?'} Ft<br>
         <strong>Áfa %:</strong> ${afa !== null ? afa.toFixed(2) + '%' : 'Ismeretlen'}<br>
+        ${afaEgyenlegHtml}
         <strong>Haszonkulcs:</strong> ${hk.toFixed(1)}%<br>
         <strong>Árrésszint (Ász%):</strong> ${asz.toFixed(1)}%<br>
         <strong>ELÁBÉ szint (EÁ%):</strong> ${ea.toFixed(1)}%<br>
@@ -738,6 +777,30 @@
         howToCalc: [
           "((Bruttó eladási ár / Nettó eladási ár) - 1) × 100",
           "((Bruttó beszerzési ár / ELÁBÉ) - 1) × 100"
+        ]
+      },
+      // Hozzáadva a 3 új elem leírása a térképhez
+      beszerzesi_afa: {
+        title: "Beszerzési Áfa (Érték)",
+        desc: "Az alapanyagok beszerzésekor kifizetett (levonható) áfa forintális értéke.",
+        howToCalc: [
+          "Bruttó Beszerzési Ár - ELÁBÉ",
+          "ELÁBÉ × (Áfa % / 100)"
+        ]
+      },
+      ertekesitesi_afa: {
+        title: "Értékesítési Áfa (Érték)",
+        desc: "Az eladott termék után felszámított (fizetendő) áfa forintális értéke.",
+        howToCalc: [
+          "Bruttó Eladási Ár - Nettó Eladási Ár",
+          "Nettó Eladási Ár × (Áfa % / 100)"
+        ]
+      },
+      afa_egyenleg: {
+        title: "Áfa Egyenleg",
+        desc: "Az értékesítési (fizetendő) és a beszerzési (levonható) áfa különbözete.",
+        howToCalc: [
+          "Értékesítési Áfa - Beszerzési Áfa"
         ]
       },
       asz: {
